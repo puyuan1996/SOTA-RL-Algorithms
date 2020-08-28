@@ -196,7 +196,8 @@ replay_buffer_size = 1e6
 replay_buffer = ReplayBufferLSTM2(replay_buffer_size)
 
 # choose env
-ENV = ['Reacher', 'Pendulum-v0', 'HalfCheetah-v2'][2]
+#ENV = ['Reacher', 'Pendulum-v0', 'HalfCheetah-v2'][2]
+ENV = 'Striker-v2'
 if ENV == 'Reacher':
     NUM_JOINTS=2
     LINK_LENGTH=[200, 140]
@@ -220,8 +221,10 @@ else:
 action_dim = action_space.shape[0]
 
 # hyper-parameters for RL training
-max_episodes  = 1000
+max_episodes  = 10000
 max_steps   = 20 if ENV ==  'Reacher' else 150  # Pendulum needs 150 steps per episode to learn well, cannot handle 20
+if ENV=='Striker-v2':
+  max_steps = 100
 frame_idx   = 0
 batch_size  = 2
 explore_steps = 0  # for action sampling in the beginning of training
@@ -293,6 +296,7 @@ if __name__ == '__main__':
         sac_trainer.save_model(model_path)
 
     if args.test:
+        max_steps=1000
         sac_trainer.load_model(model_path)
         for eps in range(10):
             if ENV == 'Reacher':
@@ -302,7 +306,7 @@ if __name__ == '__main__':
             episode_reward = 0
             hidden_out = (torch.zeros([1, 1, hidden_dim], dtype=torch.float).cuda(), \
                 torch.zeros([1, 1, hidden_dim], dtype=torch.float).cuda())  # initialize hidden state for lstm, (hidden, cell), each is (layer, batch, dim)
-            
+            last_action=env.action_space.sample()
             for step in range(max_steps):
                 hidden_in = hidden_out
                 action, hidden_out = sac_trainer.policy_net.get_action(state, last_action, hidden_in, deterministic = DETERMINISTIC)
@@ -310,7 +314,7 @@ if __name__ == '__main__':
                     next_state, reward, done, _ = env.step(action, SPARSE_REWARD, SCREEN_SHOT)
                 else:
                     next_state, reward, done, _ = env.step(action)
-                    env.render()   
+                    #env.render()   
 
                 last_action = action
                 episode_reward += reward
