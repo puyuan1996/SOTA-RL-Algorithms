@@ -233,7 +233,7 @@ AUTO_ENTROPY=True
 DETERMINISTIC=False
 hidden_dim =512
 rewards     = []
-model_path = './model/sac_v2_lstm_'+ENV
+model_path = './model/sac_v2_lstm_'+ENV+'_'
 
 sac_trainer=SAC_Trainer(replay_buffer, state_space, action_space, hidden_dim=hidden_dim, action_range=action_range  )
 import time
@@ -262,7 +262,7 @@ if __name__ == '__main__':
                     next_state, reward, done, _ = env.step(action, SPARSE_REWARD, SCREEN_SHOT)
                 else:
                     next_state, reward, done, _ = env.step(action)
-                    time.sleep(.002)
+                    #time.sleep(.002)
                     # env.render()       
                     
                 if step == 0:
